@@ -1,105 +1,337 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>Demo of Html Diff</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML 差异对比工具</title>
     <style>
+        :root {
+            --primary-color: #60bd90;
+            --ins-color: #4CAF50;
+            --del-color: #f44336;
+            --text-color: #333;
+            --bg-color: #f5f5f5;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .diff-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: white;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .result-container {
+            margin-top: 2rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         ins {
-            color: green;
+            background-color: #e8f5e9;
+            color: var(--ins-color);
+            text-decoration: none;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
 
         del {
-            color: red;
+            background-color: #ffebee;
+            color: var(--del-color);
+            text-decoration: none;
+            padding: 2px 4px;
+            border-radius: 3px;
         }
-    </style>
-    <style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
-</head>
 
+        .github-corner {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+
+        .github-corner:hover .octo-arm {
+            animation: octocat-wave 560ms ease-in-out;
+        }
+
+        @keyframes octocat-wave {
+            0%, 100% { transform: rotate(0); }
+            20%, 60% { transform: rotate(-25deg); }
+            40%, 80% { transform: rotate(10deg); }
+        }
+
+        @media (max-width: 768px) {
+            .diff-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+
+        .side-by-side {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .side-by-side .version {
+        flex: 1;
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .side-by-side .diff-content {
+        flex: 1;
+        padding: 1rem;
+        border: 1px solid var(--primary-color);
+        border-radius: 6px;
+        background: white;
+        overflow-x: auto;
+    }
+        
+    </style>
+</head>
 <body>
-<h1>Html Diff</h1>
-<form action="#" onsubmit="return false">
-    <table width="100%">
-        <tr>
-            <td width="50%">
-              <textarea style="width:100%;height: 200px;border: #60bd90 1px solid" id="oldHtml">
-                <div>Hamlet: Do you see yonder cloud that's almost in shape of a camel?
+    <div class="container">
+        <header class="header">
+            <h1>HTML 差异对比工具</h1>
+        </header>
+
+        <div class="diff-container">
+            <textarea 
+                id="oldHtml" 
+                placeholder="在此粘贴原始HTML内容..."
+                spellcheck="false"
+            ><div>Hamlet: Do you see yonder cloud that's almost in shape of a camel?
                 <p>Polonius: By the mass, and 'tis like a camel, indeed.</p>
                 Hamlet: Methinks it is like a weasel.
                 Polonius: It is backed like a weasel.
                 Hamlet: Or like a whale?
                 Polonius: Very like a whale.
-                -- Shakespeare</div>
-              </textarea>
-            </td>
-            <td width="50%">
-              <textarea style="width:100%;height: 200px;border: #60bd90 1px solid" id="newHtml">
-                <div>Hamlet: Do you see the cloud over there that's almost the shape of a camel?
+                -- Shakespeare</div></textarea>
+            
+            <textarea 
+                id="newHtml" 
+                placeholder="在此粘贴修改后的HTML内容..."
+                spellcheck="false"
+            ><div>Hamlet: Do you see the cloud over there that's almost the shape of a camel?
                   <div>Polonius: By golly, it is like a camel, indeed.</div>
                   Hamlet: I think it looks like a weasel.
                   <p>Polonius: It is shaped like a weasel.</p>          Hamlet: Or like a whale?
                   Polonius: It's totally like a whale.
                   -- Shakespeare
+                </div></textarea>
+        </div>
+
+        <div class="controls">
+            <button class="btn" data-mode="side">并排对比</button>
+            <button class="btn" data-mode="combined">合并显示</button>
+            <button class="btn" data-mode="changes">仅差异部分</button>
+        </div>
+
+        <div class="result-container">
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <a href="https://github.com/NPCDW/HtmlDiff" class="github-corner" aria-label="查看GitHub源码">
+        <svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true">
+            <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+            <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" 
+                  fill="currentColor" 
+                  class="octo-arm"></path>
+            <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" 
+                  fill="currentColor" 
+                  class="octo-body"></path>
+        </svg>
+    </a>
+
+    <script src="lib/diff_match_patch.js"></script>
+    <script src="js/htmldiff.js"></script>
+    <script src="js/htmldiff2.js"></script>
+    <script>
+        class DiffTool {
+            constructor() {
+                this.oldHtmlElement = document.getElementById('oldHtml');
+                this.newHtmlElement = document.getElementById('newHtml');
+                this.resultElement = document.getElementById('result');
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.diffEngine = new HtmlDiff();
+                this.combinedDiffEngine = new HtmlDiff2();
+            }
+
+            setupEventListeners() {
+                document.querySelectorAll('.btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.handleDiff(btn.dataset.mode));
+                });
+
+                // 添加防抖处理
+                let timeout;
+                [this.oldHtmlElement, this.newHtmlElement].forEach(textarea => {
+                    textarea.addEventListener('input', () => {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => this.handleDiff('changes'), 500);
+                    });
+                });
+            }
+
+            async handleDiff(mode) {
+                try {
+                    const oldContent = this.oldHtmlElement.value;
+                    const newContent = this.newHtmlElement.value;
+                    
+                    let resultHTML = '';
+                    
+                    switch(mode) {
+                        case 'side':
+                            resultHTML = this.generateSideBySideDiff(oldContent, newContent);
+                            break;
+                        case 'combined':
+                            resultHTML = this.generateCombinedDiff(oldContent, newContent);
+                            break;
+                        case 'changes':
+                            resultHTML = await this.generateChangesOnly(oldContent, newContent);
+                            break;
+                    }
+
+                    this.resultElement.innerHTML = resultHTML;
+                    this.highlightDifferences();
+                } catch (error) {
+                    console.error('差异计算出错:', error);
+                    this.resultElement.innerHTML = `<div class="error">错误: ${error.message}</div>`;
+                }
+            }
+
+            generateSideBySideDiff(oldContent, newContent) {
+                const { oldDiffHtml, newDiffHtml } = this.diffEngine.diff_launch(oldContent, newContent);
+                return `
+                   <div class="side-by-side">
+                <div class="version-container">
+                    <div class="version">原始版本</div>
+                    <div class="diff-content">${oldDiffHtml}</div>
                 </div>
-              </textarea>
-            </td>
-        </tr>
-    </table>
-    <div id="tmp"></div>
-    <p>
-        <input type="button" onclick="diff1()" value="Compute Diff And Recover TWO Document"/>
-        <input type="button" onclick="diff2()" value="Compute Diff And Generate ONE Document"/>
-    </p>
-</form>
+                <div class="version-container">
+                    <div class="version">修改版本</div>
+                    <div class="diff-content">${newDiffHtml}</div>
+                </div>
+            </div>
+                `;
+            }
 
-<div id="diffdatediv"></div>
+            generateCombinedDiff(oldContent, newContent) {
+                const { diffHtml } = this.combinedDiffEngine.diff_launch(oldContent, newContent);
+                return `<div class="combined-diff">${diffHtml}</div>`;
+            }
 
-<table width="100%">
-    <tr id="diffHtml1">
-        <td width="50%" valign="top" id="oldDiffHtml"></td>
-        <td width="50%" valign="top" id="newDiffHtml"></td>
-    </tr>
-    <tr id="diffHtml2">
-        <td width="100%" valign="top" id="oneDiffHtml"></td>
-    </tr>
-</table>
+            async generateChangesOnly(oldContent, newContent) {
+                const { diffHtml } = this.combinedDiffEngine.diff_launch(oldContent, newContent);
+                const doc = new DOMParser().parseFromString(diffHtml, 'text/html');
+                
+                return Array.from(doc.body.children)
+                    .filter(el => el.querySelector('ins, del'))
+                    .map(el => this.cleanLine(el.outerHTML))
+                    .join('\n');
+            }
 
-<a href="https://github.com/NPCDW/HtmlDiff" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+            cleanLine(html) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+                
+                // 移除空标签
+                Array.from(tempDiv.querySelectorAll('ins, del')).forEach(el => {
+                    if (!el.textContent.trim()) el.remove();
+                });
+
+                return tempDiv.innerHTML.replace(/(<br>){2,}/g, '<br>');
+            }
+
+            highlightDifferences() {
+                // 添加交互动画
+                document.querySelectorAll('ins, del').forEach(el => {
+                    el.style.transition = 'all 0.3s';
+                    el.addEventListener('mouseenter', () => {
+                        el.style.transform = 'scale(1.02)';
+                        el.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        el.style.transform = 'none';
+                        el.style.boxShadow = 'none';
+                    });
+                });
+            }
+        }
+
+        // 初始化工具
+        document.addEventListener('DOMContentLoaded', () => new DiffTool());
+    </script>
 </body>
-
-<script src="lib/diff_match_patch.js"></script>
-<script src="js/htmldiff.js"></script>
-<script src="js/htmldiff2.js"></script>
-<script>
-    function diff1() {
-        document.getElementById("diffHtml1").style.display="none";
-        document.getElementById("diffHtml2").style.display="none";
-
-        var html1 = document.getElementById('oldHtml').value;
-        var html2 = document.getElementById('newHtml').value;
-
-        let diffHtml = new HtmlDiff();
-        let {time, oldDiffHtml, newDiffHtml} = diffHtml.diff_launch(html1, html2)
-
-        document.getElementById('oldDiffHtml').innerHTML = oldDiffHtml
-        document.getElementById('newDiffHtml').innerHTML = newDiffHtml
-
-        document.getElementById("diffHtml1").style.display="block";
-    }
-
-    function diff2() {
-        document.getElementById("diffHtml1").style.display="none";
-        document.getElementById("diffHtml2").style.display="none";
-
-        var html1 = document.getElementById('oldHtml').value;
-        var html2 = document.getElementById('newHtml').value;
-
-        let diffHtml2 = new HtmlDiff2();
-        let {time, diffHtml} = diffHtml2.diff_launch(html1, html2)
-
-        document.getElementById('oneDiffHtml').innerHTML = diffHtml
-
-        document.getElementById("diffHtml2").style.display="block";
-    }
-
-</script>
 </html>
