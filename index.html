@@ -193,6 +193,7 @@
             <button class="btn" data-mode="changes">差异对比</button>
             <button class="btn" data-mode="added">增加部分</button>
             <button class="btn" data-mode="removed">减少部分</button>
+            <button class="btn" data-mode="marked">标记差异</button>
         </div>
 
         <div id="result" class="result-container"></div>
@@ -265,6 +266,9 @@
                             break;
                         case 'removed':
                             resultHTML = this.generateRemovedContent(oldContent, newContent);
+                            break;
+                        case 'marked':
+                            resultHTML = this.generateMarkedDiff(oldContent, newContent);
                             break;
                     }
 
@@ -354,6 +358,31 @@
                     <div class="diff-content">${removedContent}</div>
                 `;
             }
+
+            generateMarkedDiff(oldContent, newContent) {
+    const { oldDiffHtml, newDiffHtml } = this.diffEngine.diff_launch(oldContent, newContent);
+    const oldDoc = new DOMParser().parseFromString(oldDiffHtml, 'text/html');
+    const newDoc = new DOMParser().parseFromString(newDiffHtml, 'text/html');
+    
+    const markedElements = new Set();
+    
+    const markedChanges = Array.from([...oldDoc.querySelectorAll('ins, del'), ...newDoc.querySelectorAll('ins, del')])
+        .filter(el => el.textContent.includes('✓'))
+        .map(el => {
+            const parent = el.closest('tr, p, div, li'); // 获取包含差异的最近的父元素
+            if (parent && !markedElements.has(parent)) {
+                markedElements.add(parent);
+                return parent.outerHTML || parent.textContent;
+            }
+        })
+        .filter(Boolean) // 过滤掉 undefined
+        .join('<br>');
+
+    return `
+        <h3>标记差异</h3>
+        <div class="diff-content">${markedChanges}</div>
+    `;
+}
 
             cleanLine(html) {
                 const tempDiv = document.createElement('div');
